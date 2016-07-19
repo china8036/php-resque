@@ -20,12 +20,6 @@ class Worker
 {
 
     /**
-     * pid log file
-     * @var string 
-     */
-    private $pidfile = '';
-
-    /**
      * 设置worker所在的目录
      * @var sting
      */
@@ -47,7 +41,7 @@ class Worker
         if ($prefix) {
             Resque_Redis::prefix($prefix);
         }
-        $this->pidfile = BASE_ROOT . DS . 'log' . DS . 'pid' . DS . date('d') . '.pid';
+       
     }
 
     /**
@@ -62,7 +56,6 @@ class Worker
     {
         $this->loadWorkers();
         $logger = new Log(false);//传true为啰嗦模式
-        file_put_contents($this->pidfile, getmypid()); //清空以前记录
         if ($count < 1) {
             $this->work($queue, $logger, $interval, $block);
             return true;
@@ -92,8 +85,6 @@ class Worker
         $queues = explode(',', $queue);
         $worker = new Resque_Worker($queues);
         $worker->setLogger($logger);
-        file_put_contents($this->pidfile, "\t" . getmypid(), FILE_APPEND) or
-                die('Could not write PID information to ' . $this->pidfile);
         $logger->log(LogLevel::NOTICE, 'Starting worker {worker}', array('worker' => $worker));
         $worker->work($interval, $block);
     }
