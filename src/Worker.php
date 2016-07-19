@@ -61,7 +61,7 @@ class Worker
     public function run($queue, $count, $interval, $block = true)
     {
         $this->loadWorkers();
-        $logger = new Resque_Log(true);
+        $logger = new Log(false);//传true为啰嗦模式
         file_put_contents($this->pidfile, getmypid()); //清空以前记录
         if ($count < 1) {
             $this->work($queue, $logger, $interval, $block);
