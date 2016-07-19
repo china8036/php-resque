@@ -23,7 +23,7 @@ class Work
      * 设置worker所在的目录
      * @var sting
      */
-    private $workPath = 'worker';
+    private $workPath = 'jobs';
 
     /**
      * 构造函数

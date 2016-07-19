@@ -1,7 +1,7 @@
 <?php
 
 
-class job implements core\intface\Worker
+class job implements core\intface\Job
 {
 	public function perform()
 	{

@@ -5,7 +5,6 @@ if (empty($argv[1])) {
 }
 define('BASE_ROOT', __DIR__);
 define('DS', DIRECTORY_SEPARATOR);
-date_default_timezone_set('GMT');
 include_once BASE_ROOT . DS . 'src' . DS . 'Init.php';
 \core\Init::load();
 Resque::setBackend('127.0.0.1:6379');
