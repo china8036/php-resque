@@ -12,110 +12,99 @@ namespace core;
 
 use Resque;
 use Resque_Log;
+use Resque_Redis;
 use Resque_Worker;
 use Psr\Log\LogLevel;
 
 class Worker
 {
 
-    public static function run($queue)
+    /**
+     * pid log file
+     * @var string 
+     */
+    private $pidfile = '';
+    
+    /**
+     * 设置worker所在的目录
+     * @var sting
+     */
+    private $workPath = 'worker';
+
+    /**
+     * 构造函数
+     * @param string $redis_backend
+     * @param string $redis_backend_db
+     * @param string $prefix 前缀
+     */
+    public function __construct($redis_backend, $redis_backend_db = null, $prefix = null)
     {
-        $QUEUE = $queue;
-
-        /**
-         * REDIS_BACKEND can have simple 'host:port' format or use a DSN-style format like this:
-         * - redis://user:pass@host:port
-         *
-         * Note: the 'user' part of the DSN URI is required but is not used.
-         */
-        $REDIS_BACKEND = getenv('REDIS_BACKEND'); //redis的链接信息
-// A redis database number
-        $REDIS_BACKEND_DB = getenv('REDIS_BACKEND_DB');
-        if (!empty($REDIS_BACKEND)) {
-            if (empty($REDIS_BACKEND_DB))
-                Resque::setBackend($REDIS_BACKEND);
-            else
-                Resque::setBackend($REDIS_BACKEND, $REDIS_BACKEND_DB);
+        if ($redis_backend_db) {
+            Resque::setBackend($redis_backend, $redis_backend_db);
+        } else {
+            Resque::setBackend($redis_backend);
         }
-
-        $logLevel = false;
-        $LOGGING = getenv('LOGGING'); //基本日志记录
-        $VERBOSE = getenv('VERBOSE'); //啰嗦日志记录
-        $VVERBOSE = getenv('VVERBOSE'); //更啰嗦日志记录
-        if (!empty($LOGGING) || !empty($VERBOSE)) {
-            $logLevel = true;
-        } else if (!empty($VVERBOSE)) {
-            $logLevel = true;
+        if ($prefix) {
+            Resque_Redis::prefix($prefix);
         }
+        $this->pidfile = BASE_ROOT . DS . 'log' . DS . 'pid' . DS . date('d') . '.pid';
+    }
 
-        $APP_INCLUDE = getenv('APP_INCLUDE');
-        if ($APP_INCLUDE) {
-            if (!file_exists($APP_INCLUDE)) {
-                die('APP_INCLUDE (' . $APP_INCLUDE . ") does not exist.\n");
+    /**
+     * 根据设置运行worker
+     * @param sting $queue 监控的队列
+     * @param int $count 生成几个子进程
+     * @param int $interval 执行完任务的间隔时间 
+     * @param  $block 是否阻塞
+     * @return boolean
+     */
+    public function run($queue, $count, $interval, $block = true)
+    {
+
+        \Psr\ClassLoader::register(BASE_ROOT . DS . $this->workPath);
+        $logger = new Resque_Log(true);
+        file_put_contents($this->pidfile, getmypid()); //清空以前记录
+        if ($count < 1) {
+            $this->work($queue, $logger, $interval, $block);
+            return true;
+        }
+        for ($i = 0; $i < $count; ++$i) {
+            $pid = Resque::fork();
+            if ($pid == -1) {//创建失败
+                $logger->log(LogLevel::EMERGENCY, 'Could not fork worker {count}', array('count' => $i));
+                die();
+            } elseif (!$pid) {//
+                $this->work($queue, $logger, $interval, $block);
+                return true; //子进程里面不需要再循环
             }
-
-            require_once $APP_INCLUDE;
+            //父进程继续循环生成
         }
+    }
 
-// See if the APP_INCLUDE containes a logger object,
-// If none exists, fallback to internal logger
-        if (!isset($logger) || !is_object($logger)) {//注册日志记录
-            $logger = new Resque_Log($logLevel);
-        }
-
-        $BLOCKING = getenv('BLOCKING') !== FALSE;
-
-        $interval = 5; //完成任务后默认休眠时间
-        $INTERVAL = getenv('INTERVAL');
-        if (!empty($INTERVAL)) {
-            $interval = $INTERVAL;
-        }
-
-        $count = 1;
-        $COUNT = getenv('COUNT'); //启动的worker数目 可以同时启动多个worker进程
-        if (!empty($COUNT) && $COUNT > 1) {
-            $count = $COUNT;
-        }
-
-        $PREFIX = getenv('PREFIX');
-        if (!empty($PREFIX)) {
-            $logger->log(LogLevel::INFO, 'Prefix set to {prefix}', array('prefix' => $PREFIX));
-            Resque_Redis::prefix($PREFIX);
-        }
-
-        if ($count > 1) {
-            for ($i = 0; $i < $count; ++$i) {
-                $pid = Resque::fork();
-                if ($pid == -1) {
-                    $logger->log(LogLevel::EMERGENCY, 'Could not fork worker {count}', array('count' => $i));
-                    die();
-                }
-                // Child, start the worker
-                else if (!$pid) {
-                    $queues = explode(',', $QUEUE); //监控的队列
-                    $worker = new Resque_Worker($queues);
-                    $worker->setLogger($logger);
-                    $logger->log(LogLevel::NOTICE, 'Starting worker {worker}', array('worker' => $worker));
-                    $worker->work($interval, $BLOCKING);
-                    break;
-                }
-            }
-        }
-// Start a single worker
-        else {
-            $queues = explode(',', $QUEUE);
-            $worker = new Resque_Worker($queues);
-            $worker->setLogger($logger);
-
-            $PIDFILE = getenv('PIDFILE');
-            if ($PIDFILE) {
-                file_put_contents($PIDFILE, getmypid()) or
-                        die('Could not write PID information to ' . $PIDFILE);
-            }
-
-            $logger->log(LogLevel::NOTICE, 'Starting worker {worker}', array('worker' => $worker));
-            $worker->work($interval, $BLOCKING);
-        }
+    /**
+     * 运行worker
+     * @param string $queue 监控的队列
+     * @param LogLevel $logger 日志记录
+     * @param type $interval 间隔检查时间
+     * @param type $block 是否阻塞
+     */
+    public function work($queue, Resque_Log $logger, $interval, $block)
+    {
+        $queues = explode(',', $queue);
+        $worker = new Resque_Worker($queues);
+        $worker->setLogger($logger);
+        file_put_contents($this->pidfile, "\t" . getmypid(), FILE_APPEND) or
+                die('Could not write PID information to ' . $this->pidfile);
+        $logger->log(LogLevel::NOTICE, 'Starting worker {worker}', array('worker' => $worker));
+        $worker->work($interval, $block);
+    }
+    
+    /**
+     * 设置worker的目录
+     * @param string $path
+     */
+    public function setWorkPath($path){
+        $this->workPath = $path;
     }
 
 }

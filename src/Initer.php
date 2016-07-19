@@ -1,7 +1,8 @@
 <?php
 
 /*
- * 简易的应用框架
+ *
+ *  简易的应用框架
  * 主要实现自动加载\错误处理\配置读取
  */
 
@@ -10,23 +11,18 @@ namespace core;
 class Initer
 {
 
-    public static function run()
-    {
-        self::init();
-        Worker::run('*');
-    }
-
-    public static function loadWork($path)
-    {
-        \Psr\ClassLoader::register($path);
-    }
-
-    public static function init()
+    /**
+     * 加载默认配置
+     */
+    public static function load()
     {
         self::initEnv();
         self::initAutoload();
     }
 
+    /**
+     * 
+     */
     public static function initEnv()
     {
         error_reporting(E_ERROR);
@@ -34,6 +30,9 @@ class Initer
         register_shutdown_function([self, 'handleShutdown']);
     }
 
+    /**
+     * 
+     */
     public static function initAutoload()
     {
         include_once BASE_ROOT . DS . 'vendor' . DS . 'Psr' . DS . 'ClassLoader.php';
@@ -52,9 +51,13 @@ class Initer
         exit;
     }
 
+    /**
+     * 
+     */
     public static function handleShutdown()
     {
         $err = error_get_last();
+        var_dump($err);
         if (!empty($err)) {
             Log::record('shutdown', var_export($err, true));
             in_array($err['type'], self::getPHPErrorTypes()) && sleep(29);
@@ -81,6 +84,10 @@ class Initer
         return $config[$name];
     }
 
+    /**
+     * 
+     * @return type
+     */
     public static function getPHPErrorTypes()
     {
         return array(
