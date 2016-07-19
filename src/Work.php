@@ -5,6 +5,7 @@
  * worker可以注册监控那个队列 并会按设定的时间（完成一个任务后等待时间）去设置的队列中获取任务 
  * 然后执行任务投递的 任务类的perform
  * 任务worker类的注册就是自动加载 或者显示的include/require
+ * 任务执行时进程会fork一个子进程 这样就可以避免业务代码异常退出引起job退出
  * 
  */
 
@@ -45,6 +46,17 @@ class Work
     }
 
     /**
+     * 运行队列
+     * @param array $queues
+     */
+    public function queue(array $queues)
+    {
+        foreach ($queues as  $queue_setting) {
+            $this->run($queue_setting[0], $queue_setting[1], 1, false);
+        }
+    }
+
+    /**
      * 根据设置运行worker
      * @param sting $queue 监控的队列
      * @param int $count 生成几个子进程
@@ -52,19 +64,18 @@ class Work
      * @param  $block 是否阻塞
      * @return boolean
      */
-    public function run($queue, $count, $interval, $block = true)
+    public function run($queue, $count, $interval, $block = false)
     {
         $this->loadWorkers();
-        $logger = new Log(false);//传true为啰嗦模式
+        $logger = new Log(true);//传true为啰嗦模式
         if ($count < 1) {
-            $this->work($queue, $logger, $interval, $block);
-            return true;
+            $count = 1;
         }
         for ($i = 0; $i < $count; ++$i) {
             $pid = Resque::fork();
             if ($pid == -1) {//创建失败
                 $logger->log(LogLevel::EMERGENCY, 'Could not fork worker {count}', array('count' => $i));
-                die();
+                return false;
             } elseif (!$pid) {//
                 $this->work($queue, $logger, $interval, $block);
                 return true; //子进程里面不需要再循环

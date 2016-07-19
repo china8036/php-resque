@@ -1,15 +1,21 @@
 <?php
 
-/*
- *
- *  简易的应用框架
+/**
+ * @copyright (c) 2016, Ryan [CHAOMA.ME]
+ * 简易的应用框架
  * 主要实现自动加载\错误处理\配置读取
  */
 
 namespace core;
 
-class Init
+class Core
 {
+
+    /**
+     * 配置信息
+     * @var array 
+     */
+    private static $config = [];
 
     /**
      * 加载默认配置
@@ -17,11 +23,12 @@ class Init
     public static function load()
     {
         self::initEnv();
+        self::loadConfig();
         self::initAutoload();
     }
 
     /**
-     * 
+     * 设置环境
      */
     public static function initEnv()
     {
@@ -31,7 +38,15 @@ class Init
     }
 
     /**
-     * 
+     * 加载配置
+     */
+    public static function loadConfig()
+    {
+        self::$config = include BASE_ROOT . DS . 'config' . DS . 'config.php';
+    }
+
+    /**
+     * 注册自动加载类
      */
     public static function initAutoload()
     {
@@ -52,7 +67,7 @@ class Init
     }
 
     /**
-     * 
+     * 错误捕捉
      */
     public static function handleShutdown()
     {
@@ -67,21 +82,19 @@ class Init
 
     /**
      * 读取指定名称的配置项
-     * @staticvar array $config
      * @param string $name
      * @param bool $force
      * @return mixed
      */
-    public static function C($name, $force = false)
+    public static function c($name, $force = false)
     {
-        static $config;
-        if (empty($config) || $force) {
-            $config = self::loadConfig('common');
+        if (empty(self::$config) || $force) {
+            self::loadConfig();
         }
-        if (!isset($config[$name])) {
+        if (!isset(self::$config[$name])) {
             return NULL;
         }
-        return $config[$name];
+        return self::$config[$name];
     }
 
     /**
