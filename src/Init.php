@@ -8,7 +8,7 @@
 
 namespace core;
 
-class Initer
+class Init
 {
 
     /**
