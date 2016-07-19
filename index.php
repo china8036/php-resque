@@ -10,5 +10,5 @@ define('BASE_ROOT', __DIR__);
 define('DS', DIRECTORY_SEPARATOR);
 include_once BASE_ROOT . DS . 'src' . DS . 'Initer.php';
 \core\Initer::load();
-$worker = new \core\Work();
-$worker->run('*', 1, 3);
+$worke = new \core\Work();
+$worke->run('*', 1, 3);
