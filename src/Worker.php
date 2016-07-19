@@ -24,7 +24,7 @@ class Worker
      * @var string 
      */
     private $pidfile = '';
-    
+
     /**
      * 设置worker所在的目录
      * @var sting
@@ -60,8 +60,7 @@ class Worker
      */
     public function run($queue, $count, $interval, $block = true)
     {
-
-        \Psr\ClassLoader::register(BASE_ROOT . DS . $this->workPath);
+        $this->loadWorkers();
         $logger = new Resque_Log(true);
         file_put_contents($this->pidfile, getmypid()); //清空以前记录
         if ($count < 1) {
@@ -98,13 +97,22 @@ class Worker
         $logger->log(LogLevel::NOTICE, 'Starting worker {worker}', array('worker' => $worker));
         $worker->work($interval, $block);
     }
-    
+
     /**
      * 设置worker的目录
      * @param string $path
      */
-    public function setWorkPath($path){
+    public function setWorkPath($path)
+    {
         $this->workPath = $path;
+    }
+
+    /**
+     * 加载worker
+     */
+    private function loadWorkers()
+    {
+        \Psr\ClassLoader::register(BASE_ROOT . DS . $this->workPath);
     }
 
 }

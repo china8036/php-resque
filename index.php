@@ -9,5 +9,4 @@ date_default_timezone_set('GMT');
 include_once BASE_ROOT . DS . 'src' . DS . 'Initer.php';
 \core\Initer::load();
 $worker = new \core\Worker();
-$worker->setWorkPath('worker');
-$worker->run('*', 3, 3);
+$worker->run('*', 1, 3);

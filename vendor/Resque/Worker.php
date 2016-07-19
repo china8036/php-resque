@@ -208,7 +208,7 @@ class Resque_Worker
 				}
 			}
 
-			if($this->child > 0) {
+			if($this->child > 0) {//父进程
 				// Parent process, sit and wait
 				$status = 'Forked ' . $this->child . ' at ' . strftime('%F %T');
 				$this->updateProcLine($status);
