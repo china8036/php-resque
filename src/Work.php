@@ -16,7 +16,7 @@ use Resque_Redis;
 use Resque_Worker;
 use Psr\Log\LogLevel;
 
-class Worker
+class Work
 {
 
     /**
