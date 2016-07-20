@@ -39,7 +39,7 @@ class Log extends Resque_Log
      */
     public static function record($file, $msg)
     {
-        $dir = BASE_ROOT . DS . 'log' . DS . date('Y') . DS . date('m') . DS . date('d');
+        $dir = BASE_ROOT . DS . 'data' . DS . 'log' . DS . date('Y') . DS . date('m') . DS . date('d');
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
         }

@@ -70,7 +70,7 @@ class Work
     public function run($queue, $count, $interval, $block = false)
     {
         $this->loadWorkers();
-        $logger = new Log(true);//传true为啰嗦模式
+        $logger = new Log(false);//传true为啰嗦模式
         if ($count < 1) {
             $count = 1;
         }

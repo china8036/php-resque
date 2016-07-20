@@ -25,6 +25,7 @@ class Core
         self::initEnv();
         self::loadConfig();
         self::initAutoload();
+        self::loadPlugins();
     }
 
     /**
@@ -35,6 +36,7 @@ class Core
         error_reporting(E_ERROR);
         date_default_timezone_set('PRC');
         register_shutdown_function(['core\Core', 'handleShutdown']);
+        set_exception_handler(['core\Core', 'handleException']);
     }
 
     /**
@@ -52,8 +54,33 @@ class Core
     {
         include_once BASE_ROOT . DS . 'vendor' . DS . 'Psr' . DS . 'ClassLoader.php';
         \Psr\ClassLoader::init();
-        \Psr\ClassLoader::register(dirname(__DIR__) . DS . 'vendor');
+        \Psr\ClassLoader::register(BASE_ROOT . DS . 'vendor');
+        \Psr\ClassLoader::register(BASE_ROOT);
         \Psr\ClassLoader::map('core', __DIR__);
+    }
+
+    /**
+     * 
+     *  afterEnqueue  
+     *  beforeFirstFork beforeFork 
+     *  afterFork beforePerform afterPerform onFailure
+     *  注册插件
+     * @return type
+     */
+    public static function loadPlugins()
+    {
+        $plugin_setting = self::c('plugins');
+        if (empty($plugin_setting)) {
+            return;
+        }
+        foreach ($plugin_setting as $hook => $plugins) {
+            if (empty($plugins)) {
+                continue;
+            }
+            foreach ($plugins as $plugin) {
+                \Resque_Event::listen($hook, $plugin);
+            }
+        }
     }
 
     /**
@@ -62,7 +89,7 @@ class Core
      */
     public static function handleException(Exception $exception)
     {
-        Log::record('worker_ex', 'have exception: ' . $exception->getTraceAsString());
+        Log::record('exception', 'have exception: ' . $exception->getTraceAsString());
         exit;
     }
 

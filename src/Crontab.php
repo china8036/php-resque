@@ -12,15 +12,41 @@
 namespace core;
 
 use Resque;
+
 class Crontab
 {
 
+    /**
+     * 定时任务队列queue名
+     */
     const CRONTAB_QUEUE = 'crontab';
+
+    /**
+     * 定时的单位
+     */
     const TIMING_SECOND = 1;
+
+    /**
+     * 一分钟的秒数
+     */
     const PER_MIN_SECONDS = 60;
 
+    /**
+     * 经过的秒数
+     * @var static 
+     */
     static $pass_seconds = 0;
+
+    /**
+     * 经过的分钟数
+     * @var int 
+     */
     static $pass_minunts = 0;
+
+    /**
+     * 定时任务
+     * @var array
+     */
     static $tasks = [];
 
     /**
@@ -31,6 +57,7 @@ class Crontab
     {
         $pid = pcntl_fork();
         if (!$pid) {//由于要死循环阻塞 所以让子进程做这件事情
+            self::updateProcLine();//更新进程Title
             self::$tasks = $tasks;
             self::installHandler();
             pcntl_alarm(self::TIMING_SECOND);
@@ -159,6 +186,20 @@ class Crontab
             return false;
         }
         return true;
+    }
+
+    /**
+     * 设置进程标题 为了和 resque的worker名称统一 引入
+     * @param string $status The updated process title.
+     */
+    private static function updateProcLine()
+    {
+        $processTitle = 'resque-' . Resque::VERSION . ': Crontab Alarm proc';
+        if (function_exists('cli_set_process_title') && PHP_OS !== 'Darwin') {
+            cli_set_process_title($processTitle);
+        } else if (function_exists('setproctitle')) {
+            setproctitle($processTitle);
+        }
     }
 
 }
