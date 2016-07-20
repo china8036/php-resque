@@ -12,7 +12,7 @@ return [
         ['high,normal',2],
         ['high,normal,low', 3],
     ],
-    'crontab' => [
-        '1' => ['Crontab'],
+    'crontab' => [//定时任务
+        '2' => ['Crontab'],//秒做单位
     ]
 ];

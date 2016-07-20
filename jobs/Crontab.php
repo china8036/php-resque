@@ -10,7 +10,7 @@ class Crontab implements core\intface\Job
 
     public function perform()
     {
-        Log::record('crontab_jobs', [microtime(true),$this->args]);
+        Log::record('crontab_jobs', [date('Y-m-d H:i:s'), microtime(true),$this->args]);
     }
 
 }
