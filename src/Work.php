@@ -51,13 +51,12 @@ class Work
      */
     public function queue(array $queues)
     {
-        if(empty($queues)){
-            echo 'not found queues';
-            exit;
-        }
         foreach ($queues as  $queue_setting) {//统一设置为阻塞索要任务 无超时时间
             $this->run($queue_setting[0], $queue_setting[1], 0, true);
+             
         }
+        $this->run(Crontab::CRONTAB_QUEUE, 1, 0, true);//运行定时任务队列
+        Crontab::run(Core::c('crontab'));//运行定时任务
     }
 
     /**

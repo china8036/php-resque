@@ -28,7 +28,7 @@ class ClassLoader
      */
     public static function init()
     {
-        spl_autoload_register([self, 'autoload']);
+        spl_autoload_register(['Psr\ClassLoader', 'autoload']);
     }
 
     /**
