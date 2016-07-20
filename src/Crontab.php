@@ -11,6 +11,7 @@
 
 namespace core;
 
+use Resque;
 class Crontab
 {
 
@@ -28,9 +29,16 @@ class Crontab
      */
     public static function run(array $tasks)
     {
-        self::$tasks = $tasks;
-        self::installHandler();
-        pcntl_alarm(self::TIMING_SECOND);
+        $pid = pcntl_fork();
+        if (!$pid) {//由于要死循环阻塞 所以让子进程做这件事情
+            self::$tasks = $tasks;
+            self::installHandler();
+            pcntl_alarm(self::TIMING_SECOND);
+            while (true) {
+                sleep(self::TIMING_SECOND);
+                pcntl_signal_dispatch();
+            }
+        }
     }
 
     /**
@@ -38,7 +46,7 @@ class Crontab
      */
     public static function installHandler()
     {
-        pcntl_signal(SIGALRM, array('Crontab', 'signalHandler'));
+        pcntl_signal(SIGALRM, array('core\Crontab', 'signalHandler'));
     }
 
     /**
@@ -67,7 +75,7 @@ class Crontab
             foreach ($jobs as $job) {
                 $jobid[] = Resque::enqueue(self::CRONTAB_QUEUE, $job, [self::$pass_seconds], true);
             }
-            Log::record('crontab', [$jobid, $mode, $jobs]);
+            Log::record(self::CRONTAB_QUEUE, [$jobid, $mode, $jobs]);
         }
     }
 

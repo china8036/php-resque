@@ -72,11 +72,8 @@ class Core
     public static function handleShutdown()
     {
         $err = error_get_last();
-        var_dump($err);
         if (!empty($err)) {
             Log::record('shutdown', var_export($err, true));
-            in_array($err['type'], self::getPHPErrorTypes()) && sleep(29);
-            sleep(1);
         }
     }
 
