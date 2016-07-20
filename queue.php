@@ -8,7 +8,7 @@ Resque::setBackend('127.0.0.1:6379');
 
 
 
-for ($i = 0; $i < 200; $i++) {
-    $jobId = Resque::enqueue('high', 'Crontab', [$i], true);
+for ($i = 0; $i < 20; $i++) {
+    $jobId = Resque::enqueue('low', 'Crontab', [$i], true);
 }
 echo "Done";
