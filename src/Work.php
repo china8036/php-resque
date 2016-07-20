@@ -51,17 +51,17 @@ class Work
      */
     public function queue(array $queues)
     {
-        foreach ($queues as  $queue_setting) {
-            $this->run($queue_setting[0], $queue_setting[1], 1, false);
+        foreach ($queues as  $queue_setting) {//统一设置为阻塞索要任务 无超时时间
+            $this->run($queue_setting[0], $queue_setting[1], 0, true);
         }
     }
 
     /**
      * 根据设置运行worker
      * @param sting $queue 监控的队列
-     * @param int $count 生成几个子进程
-     * @param int $interval 执行完任务的间隔时间 
-     * @param  $block 是否阻塞
+     * @param int $count 生成几个监控进程
+     * @param int $interval 执行完任务的间隔时间 当阻塞时候为阻塞超时时间
+     * @param  $block 是否阻塞索要任务
      * @return boolean
      */
     public function run($queue, $count, $interval, $block = false)
