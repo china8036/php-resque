@@ -8,9 +8,9 @@ return [
     'redis_backend_db' => null, //redis 数据库名称
     'prefix' => null, //前缀 多个php-resque时候用于区分
     'queue' => [//监控的任务队列， 和监控的进程数 多个用','分开 '*'为监控所有队列
-        ['high,normal,low', 5],
-        ['normal', 1],
-        ['low', 1]
+        ['high,normal,low', 3],//先后循序标示优先级
+        ['normal,high,low', 2],
+        ['low,high,normal', 1]
     ],
     'crontab' => [//定时任务
         '10' => ['Crontab'], //秒做单位
