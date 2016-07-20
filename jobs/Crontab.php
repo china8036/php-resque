@@ -3,9 +3,11 @@
 /**
  * @copyright (c) 2916, Ryan [CHAOMA.ME]
  */
-use core\Log;
+namespace jobs;
 
-class Crontab implements core\intface\Job
+use core\Log;
+use core\intface\Job;
+class Crontab implements Job
 {
 
     public function perform()

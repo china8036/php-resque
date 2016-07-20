@@ -20,11 +20,7 @@ use Psr\Log\LogLevel;
 class Work
 {
 
-    /**
-     * 设置worker所在的目录
-     * @var sting
-     */
-    private $workPath = 'jobs';
+
 
     /**
      * 构造函数
@@ -69,7 +65,6 @@ class Work
      */
     public function run($queue, $count, $interval, $block = false)
     {
-        $this->loadWorkers();
         $logger = new Log(false);//传true为啰嗦模式
         if ($count < 1) {
             $count = 1;
@@ -101,23 +96,6 @@ class Work
         $worker->setLogger($logger);
         $logger->log(LogLevel::NOTICE, 'Starting worker {worker}', array('worker' => $worker));
         $worker->work($interval, $block);
-    }
-
-    /**
-     * 设置worker的目录
-     * @param string $path
-     */
-    public function setWorkPath($path)
-    {
-        $this->workPath = $path;
-    }
-
-    /**
-     * 加载worker
-     */
-    private function loadWorkers()
-    {
-        \Psr\ClassLoader::register(BASE_ROOT . DS . $this->workPath);
     }
 
 }
