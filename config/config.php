@@ -9,11 +9,13 @@ return [
     'prefix' => null, //前缀 多个php-resque时候用于区分
     'queue' => [//监控的任务队列， 和监控的进程数 多个用','分开 '*'为监控所有队列
         ['high', 1],
-//        ['high,normal',2],
-//        ['high,normal,low', 3],
+        ['high,normal',2],
+        ['high,normal,low', 3],
+        ['normal', 1],
+        ['low', 1]
     ],
     'crontab' => [//定时任务
-        '5' => ['Crontab'], //秒做单位
+        '10' => ['Crontab'], //秒做单位
     ],
     'plugins' => [//插件注册
         'beforePerform' => [['\plugins\DbLog', 'beforePerform']],

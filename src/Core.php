@@ -87,9 +87,9 @@ class Core
      * 捕获异常
      * @param type $exception
      */
-    public static function handleException(Exception $exception)
+    public static function handleException(\Exception $exception)
     {
-        Log::record('exception', 'have exception: ' . $exception->getTraceAsString());
+        Log::record('exception', 'have exception: ' .$exception->getMessage() . "\r\n". $exception->getTraceAsString());
         exit;
     }
 

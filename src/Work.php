@@ -78,10 +78,10 @@ class Work
             $pid = Resque::fork();
             if ($pid == -1) {//创建失败
                 $logger->log(LogLevel::EMERGENCY, 'Could not fork worker {count}', array('count' => $i));
-                return false;
+                exit;
             } elseif (!$pid) {//
                 $this->work($queue, $logger, $interval, $block);
-                return true; //子进程里面不需要再循环
+                exit; //子进程里面不需要再循环 return 的话如果此函数下面有逻辑很难控制
             }
             //父进程继续循环生成
         }
