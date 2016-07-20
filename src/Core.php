@@ -34,7 +34,7 @@ class Core
     {
         error_reporting(E_ERROR);
         date_default_timezone_set('PRC');
-        register_shutdown_function(['Core', 'handleShutdown']);
+        register_shutdown_function(['core\Core', 'handleShutdown']);
     }
 
     /**
