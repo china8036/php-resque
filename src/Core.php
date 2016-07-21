@@ -90,7 +90,7 @@ class Core
     public static function handleException(\Exception $exception)
     {
         Log::record('exception', 'have exception: ' .$exception->getMessage() . "\r\n". $exception->getTraceAsString());
-        exit;
+        //exit;
     }
 
     /**

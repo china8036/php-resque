@@ -20,7 +20,10 @@ use Psr\Log\LogLevel;
 class Work
 {
 
-
+    /**
+     * 超时重新阻塞时间 只要不是0 就可以?
+     */
+    const BLOCK_TIMEOUT = 10;
 
     /**
      * 构造函数
@@ -38,7 +41,6 @@ class Work
         if ($prefix) {
             Resque_Redis::prefix($prefix);
         }
-       
     }
 
     /**
@@ -47,12 +49,11 @@ class Work
      */
     public function queue(array $queues)
     {
-        foreach ($queues as  $queue_setting) {//统一设置为阻塞索要任务 无超时时间
-            $this->run($queue_setting[0], $queue_setting[1], 0, true);
-             
+        foreach ($queues as $queue_setting) {//统一设置为阻塞索要任务 无超时时间
+            $this->run($queue_setting[0], $queue_setting[1], self::BLOCK_TIMEOUT, true);
         }
-        $this->run(Crontab::CRONTAB_QUEUE, 1, 0, true);//运行定时任务队列
-        Crontab::run(Core::c('crontab'));//运行定时任务
+        $this->run(Crontab::CRONTAB_QUEUE, 1, self::BLOCK_TIMEOUT, true); //运行定时任务队列
+        Crontab::run(Core::c('crontab')); //运行定时任务
     }
 
     /**
@@ -65,7 +66,7 @@ class Work
      */
     public function run($queue, $count, $interval, $block = false)
     {
-        $logger = new Log(false);//传true为啰嗦模式
+        $logger = new Log(true); //传true为啰嗦模式
         if ($count < 1) {
             $count = 1;
         }
