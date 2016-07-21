@@ -13,9 +13,6 @@ return [
         ['normal,high,low', 2],
         ['low,high,normal', 1]
     ],
-    'crontab' => [//定时任务
-        '10' => ['\jobs\Crontab'], //秒做单位
-    ],
     'plugins' => [//插件注册
         'beforePerform' => [['\plugins\DbLog', 'beforePerform']],
         'afterPerform' => [['\plugins\DbLog', 'afterPerform']],

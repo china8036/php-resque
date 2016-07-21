@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * @copyright (c) 2016, Ryan [CHAOMA.ME]
+ * 
  * php resque 的机制是 投递job到多个队列中的一个队列，
  * worker可以注册监控那个队列 并会按设定的时间（完成一个任务后等待时间）去设置的队列中获取任务 
  * 然后执行任务投递的 任务类的perform
@@ -27,8 +29,8 @@ class Work
 
     /**
      * 构造函数
-     * @param string $redis_backend
-     * @param string $redis_backend_db
+     * @param string $redis_backend redis链接配置
+     * @param string $redis_backend_db db
      * @param string $prefix 前缀
      */
     public function __construct($redis_backend, $redis_backend_db = null, $prefix = null)
@@ -52,8 +54,10 @@ class Work
         foreach ($queues as $queue_setting) {//统一设置为阻塞索要任务 无超时时间
             $this->run($queue_setting[0], $queue_setting[1], self::BLOCK_TIMEOUT, true);
         }
-        $this->run(Crontab::CRONTAB_QUEUE, 1, self::BLOCK_TIMEOUT, true); //运行定时任务队列
-        Crontab::run(Core::c('crontab')); //运行定时任务
+        //运行定时任务队列 此队列专门存放定时任务投放的任务
+        $this->run(Crontab::CRONTAB_QUEUE, 1, self::BLOCK_TIMEOUT, true); 
+        //运行定时任务
+        defined('CRONTAB_CONFIG_FILE') && Crontab::run(CRONTAB_CONFIG_FILE); 
     }
 
     /**
@@ -66,7 +70,7 @@ class Work
      */
     public function run($queue, $count, $interval, $block = false)
     {
-        $logger = new Log(true); //传true为啰嗦模式
+        $logger = new Log(APP_DEBUG === true); //传true为啰嗦模式
         if ($count < 1) {
             $count = 1;
         }

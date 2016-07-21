@@ -27,7 +27,7 @@ class Log extends Resque_Log
             return;
         }
 
-        if (!($level === LogLevel::INFO || $level === LogLevel::DEBUG)) {
+        if (!in_array($level, [LogLevel::NOTICE, LogLevel::DEBUG,  LogLevel::INFO,  LogLevel::WARNING]) ) {
             self::record($level, $this->interpolate($message, $context));
         }
     }

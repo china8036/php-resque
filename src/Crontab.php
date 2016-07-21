@@ -44,21 +44,21 @@ class Crontab
     static $pass_minunts = 0;
 
     /**
-     * 定时任务
+     * 定时任务配置文件
      * @var array
      */
-    static $tasks = [];
+    static $crontab_task_file ;
 
     /**
      * 开启服务
-     * @param array $tasks 任务描述
+     * @param array $crontab_task_file 任务描述
      */
-    public static function run(array $tasks)
+    public static function run($crontab_task_file)
     {
         $pid = pcntl_fork();
         if (!$pid) {//由于要死循环阻塞 所以让子进程做这件事情
             self::updateProcLine();//更新进程Title
-            self::$tasks = $tasks;
+            self::$crontab_task_file = $crontab_task_file;
             self::installHandler();
             pcntl_alarm(self::TIMING_SECOND);
             while (true) {
@@ -95,7 +95,11 @@ class Crontab
      */
     public static function task()
     {
-        foreach (self::$tasks as $mode => $jobs) {
+        $tasks = include self::$crontab_task_file;
+        if(empty($tasks)){
+            return true;
+        }
+        foreach ($tasks as $mode => $jobs) {
             if (!self::isMatchCrontabTime($mode)) {
                 continue;
             }
