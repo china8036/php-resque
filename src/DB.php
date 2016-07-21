@@ -38,7 +38,7 @@ class DB
     public function initDB()
     {
         $db = Core::c('DB');
-        self::$db = new \Slim\PDO\Database($db['dsn'], $db['usr'], $db['pwd']);
+        self::$db = new \Slim\PDO\Database($db['dsn'], $db['usr'], $db['pwd'],[\PDO::ATTR_PERSISTENT => true]);
     }
 
     /**

@@ -24,7 +24,7 @@ return [
         'pwd' => '11111111',
     ],
     'CMB' => [//用于oauth2接口调用
-        'host' => 'http://api.test.chaoma.me',
+        'host' => 'http://api.local.chaoma.me',
         'access_token' => 'ba21a2368cdeea0292c8a2060143a6ffff8e55a8fd2',
     ],
     //用于切换到oao系统代码目录,执行其中的程序

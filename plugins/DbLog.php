@@ -87,6 +87,7 @@ class Dblog
      */
     private static function dbLog(array $data, $table = self::RESULT_LOG_TABLE)
     {
+        return ;//数据库并发写入支持的不好
         if (!isset(self::$db[$table])) {
             self::$db[$table] = new DB($table);
         }
